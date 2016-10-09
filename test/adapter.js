@@ -13,16 +13,22 @@
  */
 
 'use strict';
+
+var Promise = require('./../dist').Promise;
+
+console.log(typeof Promise);
+
 exports.deferred = function () {
-    var resolve, reject, promise = new Promise(function (resolve, reject) {
-        resolve = resolve;
-        reject = reject;
+    var resolve, reject, promise = new Promise(function (_resolve, _reject) {
+        resolve = _resolve;
+        reject = _reject;
     });
-    return {
+    var result =  {
         resolve,
         reject,
         promise
     };
+    return result;
 };
 exports.resolved = function (value) {
     return new Promise(function (resolve) {
