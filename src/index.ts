@@ -54,7 +54,18 @@ export class Promise<T> {
             throw new TypeError(`Promise resolver ${provider} is not a function`);
         }
     }
-    public then<U>(resolve?: IResolveCallback<T>, reject?: IRejectCallback<T>, exception?: IExceptionCallback): Promise<U> {
+    public then(resolve?: IResolveCallback<T>, reject?: IRejectCallback<T>) {
+        return this._then(resolve, reject);
+    }
+    public reject(reject?: IRejectCallback<T>) {
+        return this._then(undefined, reject);
+    }
+    public catch(exception?: IExceptionCallback) {
+        return this._then(undefined, undefined, exception);
+    }
+
+
+    private _then<U>(resolve?: IResolveCallback<T>, reject?: IRejectCallback<T>, exception?: IExceptionCallback): Promise<U> {
         let deferred = Promise.Deferred<U>();
         this._childrenPromises.push({
             resolve: resolve,
@@ -67,15 +78,6 @@ export class Promise<T> {
         }
         return deferred.promise;
     }
-    public reject(reject?: IRejectCallback<T>) {
-        return this.then(undefined, reject);
-    }
-    public catch(exception?: IExceptionCallback) {
-        return this.then(undefined, undefined, exception);
-    }
-
-
-
     private _emitResolve(data: T) {
         if (this._canChange()) {
             this._value = data;
@@ -129,7 +131,7 @@ export class Promise<T> {
         }
     }
     private _nextTickCallAlls() {
-        if (!this._loop) {
+        if (!this._loop && this._childrenPromises.length) {
             this._loop = true;
             nextTick(() => {
                 this._callAlls();
@@ -196,7 +198,7 @@ export class Promise<T> {
 
 
 
-    public static _Resolve<T>(promise: Promise<T>, x: Promise<T>) {
+    private static _Resolve<T>(promise: Promise<T>, x: Promise<T>) {
         let called = false, xFn: any = null;
         if (promise === x) {
             throw new TypeError('promise === x');
