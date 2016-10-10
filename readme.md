@@ -1,1 +1,2 @@
-已通过 Promise A+ 测试 : `npm run test`
+运行测试： `npm run test`  
+编译代码： `npm run build`

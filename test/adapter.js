@@ -16,8 +16,9 @@
 
 var Promise = require('./../dist').Promise;
 
-console.log(typeof Promise);
-
+/**
+ * 构建 Promise A+ 测试需要的适配器
+ */
 exports.deferred = function () {
     var resolve, reject, promise = new Promise(function (_resolve, _reject) {
         resolve = _resolve;
