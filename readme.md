@@ -1,0 +1,1 @@
+已通过 Promise A+ 测试 : `npm run test`

@@ -1,3 +1,9 @@
+/**
+ * PROMISE 
+ * 
+ * a@aepkill.com
+ */
+
 enum PromiseState {
     PENDING,
     RESOLVED,
@@ -25,6 +31,9 @@ export interface IProvider<T> {
 declare const process: {
     nextTick: (fn: (...args: any[]) => void, ...args: any[]) => void;
 };
+
+
+
 export class Promise<T> {
     private _currentState = PromiseState.PENDING;
     private _value: any = null;
@@ -134,6 +143,43 @@ export class Promise<T> {
 
 
 
+    public static All<T>(promises: Array<T | Promise<T>>) {
+        let result: Array<T> = [], count = 0, deferred = Promise.Deferred<Array<T>>();
+        function check() {
+            if (count === promises.length) {
+                deferred.resolve(result);
+            }
+        }
+        promises.forEach((value, index) => {
+            if (value instanceof Promise) {
+                value.then(value => {
+                    result[index] = value;
+                    count++;
+                    check();
+                });
+            } else {
+                result[index] = value;
+                count++;
+                check();
+            }
+        });
+        return deferred.promise;
+    }
+    public static Race<T>(promises: Array<T | Promise<T>>) {
+        let deferred = Promise.Deferred<T>(), temp: T | Promise<T> = null;
+        for (let i = 0; i < promises.length; i++) {
+            temp = promises[i];
+            if (temp instanceof Promise) {
+                temp.then(value => {
+                    deferred.resolve(value);
+                })
+            } else {
+                deferred.resolve(temp);
+                break;
+            }
+        }
+        return deferred.promise;
+    }
     public static Deferred<T>() {
         let resolve: IResolveCallback<T>,
             reject: IRejectCallback<T>,
@@ -149,6 +195,7 @@ export class Promise<T> {
     }
 
 
+
     public static _Resolve<T>(promise: Promise<T>, x: Promise<T>) {
         let called = false, xFn: any = null;
         if (promise === x) {
@@ -156,7 +203,6 @@ export class Promise<T> {
         }
         try {
             if ((typeof x === 'object' || typeof x === 'function') && isFunction(xFn = x.then)) {
-
                 try {
                     xFn.call(x, function (y: any) {
                         if (!called) {
@@ -174,7 +220,6 @@ export class Promise<T> {
                         promise._emitError(err);
                     }
                 }
-
             } else {
                 promise._emitResolve(x as any);
             }
@@ -200,8 +245,3 @@ const nextTick: typeof process.nextTick = (function () {
 function isFunction(fn: any) {
     return typeof fn === 'function';
 }
-
-function canReadPropery(obj: any) {
-    return obj == undefined;
-}
-
